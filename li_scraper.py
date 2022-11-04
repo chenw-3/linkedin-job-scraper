@@ -5,6 +5,7 @@ from linkedin_jobs_scraper import LinkedinScraper
 from linkedin_jobs_scraper.events import Events, EventData, EventMetrics
 from linkedin_jobs_scraper.query import Query, QueryOptions, QueryFilters
 from linkedin_jobs_scraper.filters import RelevanceFilters, TimeFilters, TypeFilters, ExperienceLevelFilters, RemoteFilters
+import json
 
 # Change root logger level (default is WARN)
 logging.basicConfig(level = logging.INFO)
@@ -29,7 +30,7 @@ scraper = LinkedinScraper(
     chrome_options=None,  # Custom Chrome options here
     headless=True,  # Overrides headless mode only if chrome_options is None
     max_workers=1,  # How many threads will be spawned to run queries concurrently (one Chrome driver for each thread)
-    slow_mo=1.3,  # Slow down the scraper to avoid 'Too many requests 429' errors (in seconds)
+    slow_mo=5,  # Slow down the scraper to avoid 'Too many requests 429' errors (in seconds)
     page_load_timeout=20  # Page load timeout (in seconds)    
 )
 
@@ -41,7 +42,7 @@ scraper.on(Events.END, on_end)
 queries = [
     Query(
         options=QueryOptions(            
-            limit=27  # Limit the number of jobs to scrape.            
+            limit=1  # Limit the number of jobs to scrape.            
         )
     ),
     Query(
@@ -49,7 +50,7 @@ queries = [
         options=QueryOptions(
             locations=['United States'],            
             apply_link = True,  # Try to extract apply link (easy applies are skipped). Default to False.
-            limit=5,
+            limit=1,
             filters=QueryFilters(              
                 company_jobs_url='https://www.linkedin.com/jobs/search/?f_C=1441%2C17876832%2C791962%2C2374003%2C18950635%2C16140%2C10440912&geoId=92000000',  # Filter by companies.
                 relevance=RelevanceFilters.RECENT,
@@ -61,8 +62,13 @@ queries = [
     ),
 ]
 
-results = scraper.run(queries)
-print(results)
+# results = scraper.run(queries)
+file = open("scraper_results.txt", "a")
+for item in scraper.run(queries):
+    file.write(json.loads(item))
+    print(item)
+file.close()
+
 
 # import pandas
 #import pandas as pd
